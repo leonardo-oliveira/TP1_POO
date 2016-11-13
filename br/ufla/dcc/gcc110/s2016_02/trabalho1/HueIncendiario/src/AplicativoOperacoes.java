@@ -1,12 +1,15 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.io.*;
 
+import java.io.ObjectOutputStream;
 /*
   * Classe responsavel pelas operações ou comportamentos gerais dos aplicativos.
   * Alterar, modificar, deletar, buscar... Por se tratarem de uma complexidade
   * maior, tornou-se viavel a elaboração da presente classe.
   *
   */
-public class AplicativoOperacoes {
+public class AplicativoOperacoes  implements Serializable{
 
   private int numberOfApps;
 
@@ -22,58 +25,123 @@ public class AplicativoOperacoes {
     * captura de dados do usuario, validando as informações e gravando todas as
     * informações em um arquivo ao termino da chamada.
     * Ao término da execução, registra em um arquivo binario, todos os apps cadastrados.
+    *
+    * 
     */
   public void register() {
 
     boolean control = true;
-    Aplicativo[] appVector = new Aplicativo[10];
     Aplicativo app = new Aplicativo();
-    int count = 0;
+    ArrayList<Aplicativo> appArray = new ArrayList<Aplicativo>();
 
     while(control) {
       System.out.println("\n+ [CADASTRO DE APLICATIVO]:                                     +");
       System.out.print("+ [#] Nome do Aplicativo: ");
-      appVector[count].setAppName(sc.nextLine());
+      app.setAppName(sc.nextLine());
 
       System.out.print("+ [#] Autor/Empresa Responsavel: ");
-      appVector[count].setAuthor(sc.nextLine());
+      app.setAuthor(sc.nextLine());
 
       System.out.print("+ [#] Licença Comercial: ");
-      appVector[count].setLicense(sc.nextLine());
+      app.setLicense(sc.nextLine());
+
+      System.out.print("+ [#] Versão do Aplicativo: ");
+      app.setVersion(sc.next());
 
       System.out.print("+ [#] Valor: ");
-      appVector[count].setPrice(sc.nextDouble());
+      app.setPrice(sc.nextDouble());
 
       System.out.print("+ [#] Possui Periodo Trial [N/y]: ");
-      if(sc.next().equals("y")) {
+      if(sc.next().toLowerCase().equals("y")) {
         System.out.print("+ [#] Informe a Quantidade de Dias para Trial: ");
-        appVector[count].setTrial(sc.nextInt());
+        app.setTrial(sc.nextInt());
       }else
-        appVector[count].setTrial(0);
+        app.setTrial(0);
 
       System.out.print("+ [#] Qual o Peso em Mega Bytes do Aplicativo: ");
-      appVector[count].setWeight(sc.nextDouble());
-
-      System.out.print("+ [#] Versão Atual do Aplicativo: ");
-      appVector[count].setVersion(sc.nextLine());
+      app.setWeight(sc.nextDouble());
 
       System.out.print("+ [#] Versão Requerida do Sistema Oepracional: ");
-      appVector[count].setSoVersion(sc.nextLine());
+      app.setSoVersion(sc.next());
+
+      System.out.print("+ [#] País ('All' para todos): ");
+      app.setCountry(sc.nextLine());
 
       System.out.print("+ [#] Deseja Cadastrar Outro Aplicativo [n/y]: ");
       ++numberOfApps;
-      if(sc.next().equals("n"))
+      appArray.add(app);
+      if((sc.next().toLowerCase()).equals("n"))
         control = !control;
     }
 
-    //File arq = new File("data/apps.bin");
-    //BufferedOutputStream in = new BufferedOutputStream();
+    if(!verifyChanges(appArray)) {
+      ArrayList<Integer> removeIndex = new ArrayList<Integer>();
+
+      System.out.print("+ [#] Qual dos registros deseja remover (Insira os ID separados por espaço, 0 para não digitar mais): ");
+
+      while(sc.nextInt() != 0) {
+        removeIndex.add(sc.nextInt());
+      }
+
+      for(Integer inte : removeIndex){
+        appArray.remove(inte);
+      }
+      saveDate(appArray);
+      Principal.clearConsole();
+    }
+  }
+
+  private boolean verifyChanges(ArrayList<Aplicativo> appArray){
+
+    System.out.println("+ [#] Deseja efetuar as seguintes modificações: ");
+    for(Aplicativo app : appArray) {
+      System.out.println("+-----------------------------------------------------------------+");
+      System.out.println("+ [#] Nome do Aplicativo: "+app.getAppName());
+      System.out.println("+ [#] Autor/Empresa: "+app.getAuthor());
+      System.out.println("+ [#] Licença Comercial: "+app.getLicense());
+      System.out.println("+ [#] Preço: "+app.getPrice());
+      System.out.println("+ [#] Versão: "+app.getVersion());
+      System.out.println("+ [#] País: "+app.getCountry());
+      System.out.println("+ [#] Peso (Mb): "+app.getWeight());
+      System.out.println("+ [#] Periodo de Trial: "+app.getTrial());
+      System.out.println("+ [#] Versão do Sistema Operacional: "+app.getSoVersion());
+      System.out.println("+-----------------------------------------------------------------+");
+      System.out.println("+ [#] Sim ou não [y/n]:");
+      if(sc.next().toLowerCase().equals("y"))
+        return true;
+    }
+    return false;
+  }
+  private void verifyChanges(Aplicativo app){
+
+  }
+  /*
+    * Metodo responsavel por gravar os dados dos novos aplicativos registrados em
+    * um arquivo data.
+    *
+    * @param appArray (Parametro do tipo ArrayList contendo todos os aplicativos registrados.).
+    *
+    */
+  public void saveDate(ArrayList<Aplicativo> appArray) {
+
+    try {
+      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/data"));
+      for(Aplicativo app : appArray) {
+        oos.writeObject(app);
+      }
+      oos.close();
+    } catch(IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**
     * Método responsavel pela modificação dos estados do objeto aplicativo.
     * Modifica quaisquer atributos do objeto aplicativo. Ao término de sua execução,
     * registra as modificações necessárias no arquivo.
+    *
+    *
     */
   public void modifyApp() {
 
@@ -94,6 +162,8 @@ public class AplicativoOperacoes {
   /**
     * Método responsavel pela busca de aplicativos cadastrados no sistema.
     * Efetua a leitura do arquivo de registros em busca do dado informado.
+    *
+    *
     */
   public void searchApp() {
 
@@ -108,6 +178,8 @@ public class AplicativoOperacoes {
       System.out.println("+ [#] Numero ID do Aplicativo a Ser Buscado: ");
       //app = search(sc.nextInt());
 
+    System.out.print("\033[H\033[2J");
+    System.out.flush();
   }
 
   //private Aplicativo search(String appName) {}

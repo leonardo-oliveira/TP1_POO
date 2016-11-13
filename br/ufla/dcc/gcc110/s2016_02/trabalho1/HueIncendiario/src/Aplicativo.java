@@ -95,4 +95,8 @@ public class Aplicativo {
   public void setTrial(int trial) {
     this.trial = trial;
   }
+
+  public int getTrial() {
+    return trial;
+  }
 }

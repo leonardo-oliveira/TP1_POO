@@ -15,6 +15,8 @@ public class Principal {
   /**
     * Metodo responsavel pela exibição do menu principal do sistema e a captura
     * da entrada de dados do usuario.
+    *
+    * @return void Não há retorno.
     */
   private static void showMenu() {
     int option = 0;
@@ -68,6 +70,17 @@ public class Principal {
       }
 
     }
+  }
+
+  /*
+    * Metodo estatico por não requerer a criacao de um objeto para seu uso. Responsavel apenas
+    * por limpar toda a tela do console.
+    *
+    *
+    */
+  public static void clearConsole() {
+    System.out.print("\033[H\033[2J");
+    System.out.flush();
   }
 
 }
