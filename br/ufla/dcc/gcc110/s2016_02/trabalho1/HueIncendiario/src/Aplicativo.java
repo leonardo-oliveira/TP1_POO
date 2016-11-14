@@ -20,12 +20,13 @@ public class Aplicativo {
   private double price;      //Preço
   private double weight;     //Peso em Mega Bytes
   private int trial;         //Quantidade de dias para teste
+  private int id;
 
   /**
     *
     */
   public Aplicativo(){
-
+    id += 1;
   }
 
   public void setAppName(String name) {
@@ -98,5 +99,9 @@ public class Aplicativo {
 
   public int getTrial() {
     return trial;
+  }
+
+  public int getId() {
+    return id;
   }
 }
