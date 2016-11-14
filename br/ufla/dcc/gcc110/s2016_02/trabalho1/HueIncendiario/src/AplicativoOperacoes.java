@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.*;
+import java.sql.Timestamp;
 
 /*
   * Classe responsavel pelas operações ou comportamentos gerais dos aplicativos.
@@ -11,6 +12,7 @@ import java.io.*;
 public class AplicativoOperacoes  implements Serializable{
 
   private int numberOfApps;
+  private int numberOfOperations;
 
   Scanner sc = new Scanner(System.in);
   Aplicativo app = new Aplicativo();
@@ -61,13 +63,14 @@ public class AplicativoOperacoes  implements Serializable{
       app.setWeight(sc.nextDouble());
 
       System.out.print("+ [#] Versão Requerida do Sistema Oepracional: ");
-      app.setSoVersion(sc.next());
+      app.setSoVersion(sc.nextLine());
 
       System.out.print("+ [#] País ('All' para todos): ");
       app.setCountry(sc.nextLine());
 
       Principal.clearConsole();
       System.out.print("+ [#] Deseja Cadastrar Outro Aplicativo [n/y]: ");
+      app.setDateRegister(getDate());
       ++numberOfApps;
       appArray.add(app);
       Principal.clearConsole();
@@ -94,6 +97,14 @@ public class AplicativoOperacoes  implements Serializable{
     }
     saveDate(appArray);
     Principal.clearConsole();
+  }
+
+  private String getDate() {
+
+  }
+
+  private String getHour() {
+
   }
 
   private boolean verifyChanges(ArrayList<Aplicativo> appArray){
@@ -180,9 +191,7 @@ public class AplicativoOperacoes  implements Serializable{
       System.out.println("+ [#] Deseja realizar outra busca [N/y]: ");
       if(sc.next().toLowerCase().equals("n")) control = !control;
     }
-
-    System.out.print("\033[H\033[2J");
-    System.out.flush();
+    Principal.clearConsole();
   }
 
   private void showAppData(Aplicativo app) {
@@ -197,9 +206,19 @@ public class AplicativoOperacoes  implements Serializable{
     System.out.println("+ [#] Peso (Mb): "+app.getWeight());
     System.out.println("+ [#] Periodo de Trial: "+app.getTrial());
     System.out.println("+ [#] Versão do Sistema Operacional: "+app.getSoVersion());
+    System.out.println("+ [#] Data de Registro do Aplicativo: "+app.getDateRegister() + " " + app.getHourRegister());
     System.out.println("+-----------------------------------------------------------------+");
   }
 
+  /**
+    * Método responsavel pela busca de um objeto aplicativo por via do atributo appName.
+    * Efetua a leitura do arquivo de dados, carrega a lista de objetos em uma estrutura ArrayList,
+    * percorre tal array em busca de um objeto cujo o estado de seu atributo appName seja igual ao parametro
+    * passado pelo usuario na chamada da função.
+    *
+    * @params appName (Parametro do tipo String, estado do atributo appName do objeto.)
+    * @return Aplicativo (Retorna um objeto do tipo Aplicativo.)
+    */
   private Aplicativo search(String appName) {
 
     try {
@@ -223,9 +242,157 @@ public class AplicativoOperacoes  implements Serializable{
     }catch(Exception e) {
       System.out.println("+ [X] Ops: Houve uma falha na leitura do arquivo. ERRO("+e.toString()+").");
     }
-
   }
-  //private Aplicativo search(int idApp) {}
-  //public void removeApp() {}
+
+  /**
+    * Método responsavel pela busca de um objeto aplicativo por via do atributo ID.
+    * Efetua a leitura do arquivo de dados, carrega a lista de objetos em uma estrutura ArrayList,
+    * percorre tal array em busca de um objeto cujo o estado de seu atributo ID seja igual ao parametro
+    * passado pelo usuario na chamada da função.
+    *
+    * @params idApp (Parametro do tipo inteiro, estado do ID do objeto.)
+    * @return Aplicativo (Retorna um objeto do tipo Aplicativo.)
+    */
+  private Aplicativo search(int idApp) {
+    try {
+      ObjectInputStream oi = new ObjectInputStream(new FileInputStream("data/data.dat"));
+      Aplicativo app = null;
+      ArrayList<Aplicativo> appArray = new ArrayList<Aplicativo>();
+
+      while((app = oi.readObject()) != null) {
+        if(app instanceof Aplicativo) {
+          Aplicativo appx = (Aplicativo) app;
+          appArray.add(appx);
+        }
+      }
+
+      for(Aplicativo appIndex : appArray) {
+        if(appIndex.getId().equals(idApp))
+          return appIndex;
+      }
+      System.out.println("+ [X] Registro não encontrado!");
+
+    }catch(Exception e) {
+      System.out.println("+ [X] Ops: Houve uma falha na leitura do arquivo. ERRO("+e.toString()+").");
+    }
+  }
+
+  /**
+    * Método responsavel pela remoção de um objeto Aplicativo do arquivo de dados. Efetua a leitura do arquivo
+    * de dados, em seguida, carrega em uma array list a lista de objetos pertencentes ao arquivo.
+    * Em seguida, efetua uma busca pelo objeto procurado, comparando uma String recebida por parametro referente
+    * ao estado do atribudo appName do objeto. Ao encontrar, remove-se o objeto do array list e em seguida, grava
+    * novamente no arquivo.
+    *
+    * @params appName (Parametro do tipo String, contendo o nome do aplicativo.)
+    */
+  public void removeApp(String appName) {
+    try {
+      ObjectInputStream oi = new ObjectInputStream(new FileInputStream("data/data.dat"));
+      Aplicativo app = null;
+      ArrayList<Aplicativo> appArray = new ArrayList<Aplicativo>();
+
+      while((app = oi.readObject()) != null) {
+        if(app instanceof Aplicativo) {
+          Aplicativo appx = (Aplicativo) app;
+          appArray.add(appx);
+        }
+      }
+      int contador = 0;
+      for(Aplicativo appIndex : appArray) {
+        if(appIndex.getAppName().equals(appName)){
+          appArray.remove(contador);
+          saveDate(appArray);
+          return;
+        }
+        contador++;
+      }
+      System.out.println("+ [X] Registro não encontrado!");
+
+    }catch(Exception e) {
+      System.out.println("+ [X] Ops: Houve uma falha na leitura do arquivo. ERRO("+e.toString()+").");
+    }
+  }
+
+  /**
+    * Método responsavel pela exibição e listagem de todos os objetos armazenados no arquivo de dados.
+    * Carrega um array list com todos os objetos, percorre-o imprimindo na tela todos os objetos.
+    *
+    */
+  public void showListOfApps(){
+    try {
+      ObjectInputStream oi = new ObjectInputStream(new FileInputStream("data/data.dat"));
+      Aplicativo app = null;
+      ArrayList<Aplicativo> appArray = new ArrayList<Aplicativo>();
+
+      while((app = oi.readObject()) != null) {
+        if(app instanceof Aplicativo) {
+          Aplicativo appx = (Aplicativo) app;
+          appArray.add(appx);
+        }
+      }
+      for(Aplicativo appIndex : appArray) {
+        SyStem.out.println("Aplicativo: " + appIndex.getAppName());
+      }
+      return;
+      }catch(Exception e) {
+      System.out.println("+ [X] Ops: Houve uma falha na leitura do arquivo. ERRO("+e.toString()+").");
+    }
+  }
+/*
+  public static void generateLogFile(ArrayList<Aplicativo> appArray, String nameOfMethod) {
+    try {
+      FileWriter arq = new FileWriter("data/log.txt");
+      ++numberOfOperations;
+      switch(nameOfMethod){
+        case "removeApp":
+          arq.write("["+numberOfOperations+"] ("+ getHour()+"/"+getDate()+"): Remoção do(s) seguinte(s) aplicativo(s): ");
+          for(Aplicativo appIndex : appArray)
+            arq.write("+ + Aplicativo: "+appIndex.getAppName()+".");
+          break;
+
+        case "searchApp":
+          arq.write("["+numberOfOperations+"] ("+ getHour()+"/"+getDate()+"): Busca pelo(s) aplicativo(s): ");
+          for(Aplicativo appIndex : appArray)
+            arq.write("+ + Aplicativo: "+appIndex.getAppName()+".");
+          break;
+
+        case: "register":
+          arq.write("["+numberOfOperations+"] ("+ getHour()+"/"+getDate()+"): Registro do(s) seguinte(s) aplicativo(s): ");
+          for(Aplicativo appIndex : appArray)
+            arq.write("+ + Aplicativo: "+appIndex.getAppName()+".");
+          break;
+
+        case "showListOfApps":
+          arq.write("["+numberOfOperations+"] ("+ getHour()+"/"+getDate()+"): Listagem de todos os aplicativos cadastrados: ");
+          for(Aplicativo appIndex : appArray)
+            arq.write("+ + Aplicativo: "+appIndex.getAppName()+".");
+          break;
+
+        default:
+          arq.write("[X]: Operação não reconhecida.");
+          break;
+      }
+    }catch (Exception e) {
+      System.out.println("+ [X] Ops: Houve um erro na geração do arquivo de log. ERRO("+e.toString()+").");
+    }
+  }
+
+  public static void generateLogFile(Aplicativo app) {
+    try {
+      FileWriter arq = new FileWriter("data/log.txt");
+      ++numberOfOperations;
+      switch(nameOfMethod) {
+        case: "modifyApp":
+          arq.write("["+numberOfOperations+"] ("+ getHour()+"/"+getDate()+"): Modificação do seguinte aplicativo: "+app.getAppName()+".");
+          break;
+
+        default:
+          arq.write("[X]: Operação não reconhecida.");
+          break;
+      }
+    }catch (Exception e) {
+      System.out.println("+ [X] Ops: Houve um erro na geração do arquivo de log. ERRO("+e.toString()+").");
   //public void showListOfApps(){}
+  */
 }

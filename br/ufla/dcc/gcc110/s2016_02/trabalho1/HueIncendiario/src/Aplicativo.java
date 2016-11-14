@@ -20,13 +20,25 @@ public class Aplicativo {
   private double price;      //Preço
   private double weight;     //Peso em Mega Bytes
   private int trial;         //Quantidade de dias para teste
-  private int id;
+  private int id;            //Identification number of register
+  private static int ContadorId;
+  private String dateRegister;       //Date of Register
+  private String hourRegister;      //Hour of Register
 
   /**
     *
     */
   public Aplicativo(){
-    id += 1;
+    id = ContadorId;
+    ++ContadorId;
+  }
+
+  public void setDateRegister(String dateRegister) {
+    this.dateRegister = dateRegister;
+  }
+
+  public String getDateRegister() {
+    return dateRegister;
   }
 
   public void setAppName(String name) {
