@@ -61,7 +61,7 @@ public class Principal {
           break;
 
         case 5:
-          //app.showListOfApps();
+          app.showListOfApps();
           break;
 
         default:
